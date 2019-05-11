@@ -1,0 +1,49 @@
+---
+title: "RMarkdown Report"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+gapminder <- read.csv("./data/gapminder_data.csv")
+```
+
+### R for Reproducible Scientific Analysis
+This document is created as a demo for using RMarkdown for the Memorial University Software Carpentry workshop. RMarkdown is an incredibly useful tool for incorporating your code into documents. You can use it to create documentation for your packages or use it to write a summary report of your project.
+
+***
+
+#### Plotting with {ggplot2}
+
+```{r echo=FALSE}
+gapminder %>%
+  filter(year > 1995) %>%
+  ggplot(aes(y = gdpPercap, x = continent)) +
+  geom_boxplot() +
+  geom_jitter(aes(colour=lifeExp), width = 0.25)+
+  scale_colour_gradient(high = 'red', low = 'yellow')+
+  theme_bw()+xlab("Continent")+ylab("GDP per Capita")+
+  ggtitle("GDP per Capita and Life Expectancy by Continent")+
+  theme(plot.title = element_text(size=14, hjust = 0.5))
+```
+
+***
+
+#### Summary table using {dplyr}
+```{r echo=FALSE}
+kable(gapminder %>%
+  mutate(gdp_billion = gdpPercap * pop/10^9) %>%
+  group_by(continent)%>%
+  summarise(mean_gdpPercap=mean(gdpPercap),
+            sd_gdpPercap = sd(gdpPercap),
+            se_gdpPercap = sd(gdpPercap) / sqrt(n() ),
+            mean_gdp_billion = mean(gdp_billion)), caption = "Table 1. summary table using dplyr")
+```
+
+***
+
+#### Text summary using inline code
+This report was written using the <a href="https://www.gapminder.org">gapminder</a> data set. The average life expectancy in the americas in year **`r max(gapminder$year)`** was **`r gapminder %>% filter(year==max(year) & continent == 'Americas') %>% summarise(mean(lifeExp))`**.
